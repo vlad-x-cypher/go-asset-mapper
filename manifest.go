@@ -2,7 +2,10 @@ package asset
 
 import (
 	"encoding/json"
+	"errors"
+	"io"
 	"os"
+	"strings"
 )
 
 type ManifestType int
@@ -31,14 +34,27 @@ type viteManifestRecord struct {
 	IsDynamicEntry bool     `json:"isDynamicEntry"`
 }
 
-func parseViteManifest(path string, a *AssetMapper) error {
+func parseManifest(path string, a *AssetMapper, t ManifestType) error {
 	file, err := os.Open(path)
 	if err != nil {
 		return err
 	}
 	defer file.Close()
 
-	decoder := json.NewDecoder(file)
+	switch t {
+	case ViteManifestType:
+		return readViteManifest(file, a)
+	case WebpackManifestType:
+		return readWebpackManifest(file, a)
+	}
+
+	return errors.New("undefined manifest type")
+}
+
+func readViteManifest(reader io.Reader, a *AssetMapper) error {
+	var err error
+	decoder := json.NewDecoder(reader)
+	pubHasTrailingSlash := strings.HasSuffix(a.PublicPath, "/")
 
 	for decoder.More() {
 		var data map[string]viteManifestRecord
@@ -49,36 +65,39 @@ func parseViteManifest(path string, a *AssetMapper) error {
 		}
 
 		for k, v := range data {
+			if pubHasTrailingSlash {
+				v.File = strings.TrimLeft(v.File, "/")
+			}
 			asset := &Asset{
-				Path:       k,
-				PublicPath: a.PublicPath + v.File,
+				Path:       v.File,
+				PublicPath: a.PublicPath,
 				Hash:       "",
 			}
 
 			a.Assets[k] = asset
 			if v.IsEntry {
 				entry := a.CreateEntry(v.Name)
-				entry.Add(asset.PublicPath)
+				entry.Add(asset.String())
 
 				for _, css := range v.CSS {
-					entry.Add(a.PublicPath + css)
+					cssAsset := &Asset{
+						Path:       css,
+						PublicPath: a.PublicPath,
+						Hash:       "",
+					}
+					a.Assets[css] = cssAsset
+					entry.Add(cssAsset.String())
 				}
 			}
-
 		}
 	}
 
 	return nil
 }
 
-func parseWebpackManifest(path string, a *AssetMapper) error {
-	file, err := os.Open(path)
-	if err != nil {
-		return err
-	}
-	defer file.Close()
-
-	decoder := json.NewDecoder(file)
+func readWebpackManifest(reader io.Reader, a *AssetMapper) (err error) {
+	decoder := json.NewDecoder(reader)
+	pubHasTrailingSlash := strings.HasSuffix(a.PublicPath, "/")
 
 	for decoder.More() {
 		var data map[string]string
@@ -88,9 +107,12 @@ func parseWebpackManifest(path string, a *AssetMapper) error {
 			return err
 		}
 
-		for k := range data {
+		for k, v := range data {
+			if pubHasTrailingSlash {
+				v = strings.TrimLeft(v, "/")
+			}
 			asset := &Asset{
-				Path:       k,
+				Path:       v,
 				PublicPath: a.PublicPath,
 				Hash:       "",
 			}
