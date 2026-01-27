@@ -141,22 +141,26 @@ func attributeMapToString(m map[string]string) string {
 	s := []string{}
 
 	for k, v := range m {
-		if k == "async" || k == "defer" {
-			s = append(s, k)
-			continue
+		if v == "" {
+			s = append(s, html.EscapeString(k))
+		} else {
+			s = append(s, fmt.Sprintf(`%s="%s"`, html.EscapeString(k), html.EscapeString(v)))
 		}
-		s = append(s, fmt.Sprintf(`%s="%s"`, html.EscapeString(k), html.EscapeString(v)))
 	}
 
 	return strings.Join(s, " ")
 }
 
+// tagAttributes Extracts attributes to key: val map from flat slice
+// attrs must be an even number, every first reperesenting key and every second - value
+// Example: ["attr1", "val1", "attr2", "val2"]
+//
+// Result: map[string]string{"attr1": "val1", "attr2": "val2"}
 func tagAttributes(attrs []string) (map[string]string, error) {
-	attrMap := map[string]string{}
-
 	if len(attrs)%2 != 0 {
 		return nil, errors.New("attrs must be an even number of strings")
 	}
+	attrMap := map[string]string{}
 
 	for i := 0; i < len(attrs); i += 2 {
 		attrMap[attrs[i]] = attrs[i+1]

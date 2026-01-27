@@ -10,36 +10,51 @@ func TestAssetMapperGet(t *testing.T) {
 		PublicPath: "/",
 	}
 
-	result := a.Get("test.css")
-	expected := "/test.css?v=123"
-
-	if expected != result {
-		t.Errorf("String should be equal. Expected: %s\nGot:%s\n", expected, result)
+	table := []struct {
+		in       string
+		expected string
+	}{
+		{"test.css", "/test.css?v=123"},
+		{"raw.doc", "raw.doc"},
 	}
 
-	expected = "raw.doc"
-	result = a.Get(expected)
-	if expected != result {
-		t.Errorf("String should be equal. Expected: %s\nGot:%s\n", expected, result)
+	for _, tt := range table {
+		result := a.Get(tt.in)
+		if tt.expected != result {
+			t.Errorf("String should be equal. Expected: %s\nGot:%s\n", tt.expected, result)
+		}
 	}
 }
 
 func TestAttributeToString(t *testing.T) {
-	s := attributeMapToString(map[string]string{
-		"data-test": "value",
-	})
-
-	expected := "data-test=\"value\""
-	if s != expected {
-		t.Errorf("String should be equal. Expected: \"%s\"\nGot: \"%s\"\n", expected, s)
+	attrTest := []struct {
+		in       map[string]string
+		expected string
+	}{
+		{
+			map[string]string{
+				"data-test": "value",
+			},
+			"data-test=\"value\"",
+		},
+		{
+			map[string]string{
+				"shouldEscape<>": ">",
+			},
+			"shouldEscape&lt;&gt;=\"&gt;\"",
+		},
+		{
+			map[string]string{
+				"empty": "",
+			},
+			"empty",
+		},
 	}
 
-	s = attributeMapToString(map[string]string{
-		"shouldEscape<>": ">",
-	})
-
-	expected = "shouldEscape&lt;&gt;=\"&gt;\""
-	if s != expected {
-		t.Errorf("String should be equal. Expected: \"%s\"\nGot: \"%s\"\n", expected, s)
+	for _, tt := range attrTest {
+		s := attributeMapToString(tt.in)
+		if s != tt.expected {
+			t.Errorf("String should be equal. Expected: \"%s\"\nGot: \"%s\"\n", tt.expected, s)
+		}
 	}
 }
