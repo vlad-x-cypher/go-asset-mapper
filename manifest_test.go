@@ -87,7 +87,8 @@ func TestViteParser(t *testing.T) {
 	if len(entries) < 1 {
 		t.Errorf("entry count incorrect\n expected: %d\n got: %d", 1, len(entries))
 	}
-	if entries[0] != a.PublicPath+"assets/app-o2N34dPp.css" {
-		t.Errorf("entry path incorrect\n expected: %s\n got: %s", "assets/app-o2N34dPp.css", entries[0])
+	entryCSS := a.Get("assets/app-o2N34dPp.css")
+	if entries[0] != entryCSS {
+		t.Errorf("entry path incorrect\n expected: %s\n got: %s", entryCSS, entries[0])
 	}
 }
