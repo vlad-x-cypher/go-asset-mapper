@@ -53,5 +53,6 @@ func main() {
 	})
 	http.Handle("GET /static/", http.StripPrefix("/static", http.FileServer(http.Dir("./public"))))
 
+	log.Println(assetMapper.Get("src/placeholder.jpeg"))
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }

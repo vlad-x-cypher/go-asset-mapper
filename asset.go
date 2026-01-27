@@ -36,5 +36,8 @@ func NewAsset(file *os.File, path, publicPath string, hashLen int) (*Asset, erro
 }
 
 func (a *Asset) String() string {
-	return a.PublicPath + a.Path + "?v=" + a.Hash
+	if a.Hash != "" {
+		return a.PublicPath + a.Path + "?v=" + a.Hash
+	}
+	return a.PublicPath + a.Path
 }

@@ -49,13 +49,7 @@ func NewAssetMapper() *AssetMapper {
 //		Type: asset.ViteManifestType,
 //	})
 func (a *AssetMapper) UseManifest(config ManifestConfig) error {
-	switch config.Type {
-	case ViteManifestType:
-		return parseViteManifest(config.Path, a)
-	case WebpackManifestType:
-		return parseWebpackManifest(config.Path, a)
-	}
-	return errors.New("undefined manifest type")
+	return parseManifest(config.Path, a, config.Type)
 }
 
 // CreateEntry creates AssetsMapperEntry if not exists and returns pointer to that entry.

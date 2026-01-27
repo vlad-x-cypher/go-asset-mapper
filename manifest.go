@@ -2,6 +2,8 @@ package asset
 
 import (
 	"encoding/json"
+	"errors"
+	"io"
 	"os"
 )
 
@@ -31,14 +33,26 @@ type viteManifestRecord struct {
 	IsDynamicEntry bool     `json:"isDynamicEntry"`
 }
 
-func parseViteManifest(path string, a *AssetMapper) error {
+func parseManifest(path string, a *AssetMapper, t ManifestType) error {
 	file, err := os.Open(path)
 	if err != nil {
 		return err
 	}
 	defer file.Close()
 
-	decoder := json.NewDecoder(file)
+	switch t {
+	case ViteManifestType:
+		return readViteManifest(file, a)
+	case WebpackManifestType:
+		return readWebpackManifest(file, a)
+	}
+
+	return errors.New("undefined manifest type")
+}
+
+func readViteManifest(reader io.Reader, a *AssetMapper) error {
+	var err error
+	decoder := json.NewDecoder(reader)
 
 	for decoder.More() {
 		var data map[string]viteManifestRecord
@@ -50,8 +64,8 @@ func parseViteManifest(path string, a *AssetMapper) error {
 
 		for k, v := range data {
 			asset := &Asset{
-				Path:       k,
-				PublicPath: a.PublicPath + v.File,
+				Path:       v.File,
+				PublicPath: a.PublicPath,
 				Hash:       "",
 			}
 
@@ -64,21 +78,14 @@ func parseViteManifest(path string, a *AssetMapper) error {
 					entry.Add(a.PublicPath + css)
 				}
 			}
-
 		}
 	}
 
 	return nil
 }
 
-func parseWebpackManifest(path string, a *AssetMapper) error {
-	file, err := os.Open(path)
-	if err != nil {
-		return err
-	}
-	defer file.Close()
-
-	decoder := json.NewDecoder(file)
+func readWebpackManifest(reader io.Reader, a *AssetMapper) (err error) {
+	decoder := json.NewDecoder(reader)
 
 	for decoder.More() {
 		var data map[string]string
@@ -88,9 +95,9 @@ func parseWebpackManifest(path string, a *AssetMapper) error {
 			return err
 		}
 
-		for k := range data {
+		for k, v := range data {
 			asset := &Asset{
-				Path:       k,
+				Path:       v,
 				PublicPath: a.PublicPath,
 				Hash:       "",
 			}
