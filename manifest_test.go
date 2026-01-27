@@ -67,15 +67,13 @@ func TestViteParser(t *testing.T) {
 	}{
 		{"src/app.js", a.PublicPath + "assets/app-CKgRTByK.js"},
 		{"src/placeholder.jpeg", a.PublicPath + "assets/placeholder-DXdl7YkJ.jpeg"},
+		{"non-existent.css", "non-existent.css"},
 		// test correct entries parse
 		{"assets/app-o2N34dPp.css", a.PublicPath + "assets/app-o2N34dPp.css"},
-		{"non-existent.css", "non-existent.css"},
 	}
 
 	readViteManifest(&buff, a)
 	var result string
-
-	t.Logf("%#v", a.Assets)
 
 	for _, tt := range table {
 		result = a.Get(tt.in)
