@@ -5,7 +5,7 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/Vlad-x-cypher/go-asset-mapper"
+	"github.com/vlad-x-cypher/go-asset-mapper"
 )
 
 func main() {

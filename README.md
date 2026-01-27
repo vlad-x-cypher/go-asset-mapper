@@ -6,7 +6,7 @@ go-asset-mapper is a Go package to serve versioned static files in Go HTML Templ
 
 Install via Go modules:
 ```bash
-go get github.com/Vlad-x-cypher/go-asset-mapper
+go get github.com/vlad-x-cypher/go-asset-mapper
 ```
 
 ### Example 
@@ -20,7 +20,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/Vlad-x-cypher/go-asset-mapper"
+	"github.com/vlad-x-cypher/go-asset-mapper"
 )
 
 func main() {
@@ -116,7 +116,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/Vlad-x-cypher/go-asset-mapper"
+	"github.com/vlad-x-cypher/go-asset-mapper"
 )
 
 func main() {
