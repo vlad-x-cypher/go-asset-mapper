@@ -16,6 +16,7 @@ func TestAssetMapperGet(t *testing.T) {
 	}{
 		{"test.css", "/test.css?v=123"},
 		{"raw.doc", "raw.doc"},
+		{"/raw.doc", "/raw.doc"},
 	}
 
 	for _, tt := range table {

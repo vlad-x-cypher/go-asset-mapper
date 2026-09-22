@@ -119,8 +119,8 @@ func (a *AssetMapper) ScanDir(dirName string) error {
 }
 
 func extractAssetPathFromMap(m map[string]*Asset, search string) string {
-	search = strings.TrimLeft(search, "/")
-	if asset, ok := m[search]; ok {
+	s := strings.TrimLeft(search, "/")
+	if asset, ok := m[s]; ok {
 		return asset.String()
 	}
 	return search
