@@ -39,7 +39,9 @@ func parseManifest(path string, a *AssetMapper, t ManifestType) error {
 	if err != nil {
 		return err
 	}
-	defer file.Close()
+	defer func() {
+		_ = file.Close()
+	}()
 
 	switch t {
 	case ViteManifestType:
@@ -64,12 +66,9 @@ func readViteManifest(reader io.Reader, a *AssetMapper) error {
 		}
 
 		for k, v := range data {
-			v.File = strings.TrimLeft(v.File, "/")
-			assetPub := strings.TrimRight(a.PublicPath, "/") + "/"
-			asset := &Asset{
-				Path:       v.File,
-				PublicPath: assetPub,
-				Hash:       "",
+			asset, err := NewAsset(nil, v.File, a.PublicPath, 0)
+			if err != nil {
+				return err
 			}
 
 			a.AddAsset(asset, false)
@@ -79,14 +78,13 @@ func readViteManifest(reader io.Reader, a *AssetMapper) error {
 				entry.Add(asset.String())
 
 				for _, css := range v.CSS {
-					cssAsset := &Asset{
-						Path:       strings.TrimLeft(css, "/"),
-						PublicPath: assetPub,
-						Hash:       "",
+					asset, err := NewAsset(nil, css, a.PublicPath, 0)
+					if err != nil {
+						return err
 					}
 
-					a.AddAsset(cssAsset, false)
-					entry.Add(cssAsset.String())
+					a.AddAsset(asset, false)
+					entry.Add(asset.String())
 				}
 			}
 		}
@@ -107,11 +105,9 @@ func readWebpackManifest(reader io.Reader, a *AssetMapper) (err error) {
 		}
 
 		for k, v := range data {
-			v = strings.TrimLeft(v, "/")
-			asset := &Asset{
-				Path:       v,
-				PublicPath: strings.TrimRight(a.PublicPath, "/") + "/",
-				Hash:       "",
+			asset, err := NewAsset(nil, v, a.PublicPath, 0)
+			if err != nil {
+				return err
 			}
 			a.AddAsset(asset, false)
 			a.Assets[k] = asset

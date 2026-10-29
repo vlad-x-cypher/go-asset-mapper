@@ -31,7 +31,10 @@ func TestWebpackParser(t *testing.T) {
 		{"bundle.js", "/static/bundle/bundle.06150a645f5d9e7e714c.js"},
 	}
 
-	readWebpackManifest(&buff, a)
+	err := readWebpackManifest(&buff, a)
+	if err != nil {
+		t.Error(err)
+	}
 	var result string
 
 	for _, tt := range table {
@@ -72,7 +75,10 @@ func TestViteParser(t *testing.T) {
 		{"assets/app-o2N34dPp.css", a.PublicPath + "assets/app-o2N34dPp.css"},
 	}
 
-	readViteManifest(&buff, a)
+	err := readViteManifest(&buff, a)
+	if err != nil {
+		t.Error(err)
+	}
 	var result string
 
 	for _, tt := range table {

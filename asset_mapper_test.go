@@ -1,6 +1,8 @@
 package asset
 
-import "testing"
+import (
+	"testing"
+)
 
 func TestAssetMapperGet(t *testing.T) {
 	a := NewAssetMapper()
@@ -19,6 +21,32 @@ func TestAssetMapperGet(t *testing.T) {
 		{"/raw.doc", "/raw.doc"},
 	}
 
+	for _, tt := range table {
+		result := a.Get(tt.in)
+		if tt.expected != result {
+			t.Errorf("String should be equal. Expected: %s\nGot:%s\n", tt.expected, result)
+		}
+	}
+}
+
+func TestAssetMapperGetAbsoluteURL(t *testing.T) {
+	table := []struct {
+		in       string
+		expected string
+	}{
+		{"//example.com/path.js", "//example.com/path.js"},
+		{"http://example.com/path.js", "http://example.com/path.js"},
+		{"https://example.com/path.js", "https://example.com/path.js"},
+	}
+	a := NewAssetMapper()
+	a.PublicPath = "/static"
+	for _, v := range table {
+		asset, err := NewAsset(nil, v.in, a.PublicPath, 32)
+		if err != nil {
+			t.Error(err)
+		}
+		a.AddAsset(asset, false)
+	}
 	for _, tt := range table {
 		result := a.Get(tt.in)
 		if tt.expected != result {
