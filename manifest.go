@@ -5,7 +5,6 @@ import (
 	"errors"
 	"io"
 	"os"
-	"strings"
 )
 
 type ManifestType int
