@@ -3,9 +3,14 @@ package asset
 import (
 	"crypto/sha256"
 	"encoding/hex"
+	"errors"
 	"io"
 	"os"
+	"path/filepath"
+	"strings"
 )
+
+var errInvalidHashLen = errors.New("hashLen must be between 0 and 64")
 
 type Asset struct {
 	PublicPath string
@@ -15,6 +20,11 @@ type Asset struct {
 
 func NewAsset(file *os.File, path, publicPath string, hashLen int) (*Asset, error) {
 	defer file.Close()
+
+	hashLen = max(0, hashLen)
+	if hashLen > 64 {
+		return nil, errInvalidHashLen
+	}
 
 	hash := ""
 	if hashLen > 0 {
@@ -29,9 +39,9 @@ func NewAsset(file *os.File, path, publicPath string, hashLen int) (*Asset, erro
 	hash = hash[0:hashLen]
 
 	return &Asset{
-		Path:       path,
+		Path:       strings.TrimLeft(filepath.ToSlash(path), "/"),
 		Hash:       hash,
-		PublicPath: publicPath,
+		PublicPath: strings.TrimRight(publicPath, "/") + "/",
 	}, nil
 }
 

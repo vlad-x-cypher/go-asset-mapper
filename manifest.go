@@ -54,7 +54,6 @@ func parseManifest(path string, a *AssetMapper, t ManifestType) error {
 func readViteManifest(reader io.Reader, a *AssetMapper) error {
 	var err error
 	decoder := json.NewDecoder(reader)
-	pubHasTrailingSlash := strings.HasSuffix(a.PublicPath, "/")
 
 	for decoder.More() {
 		var data map[string]viteManifestRecord
@@ -65,15 +64,15 @@ func readViteManifest(reader io.Reader, a *AssetMapper) error {
 		}
 
 		for k, v := range data {
-			if pubHasTrailingSlash {
-				v.File = strings.TrimLeft(v.File, "/")
-			}
+			v.File = strings.TrimLeft(v.File, "/")
+			assetPub := strings.TrimRight(a.PublicPath, "/") + "/"
 			asset := &Asset{
 				Path:       v.File,
-				PublicPath: a.PublicPath,
+				PublicPath: assetPub,
 				Hash:       "",
 			}
 
+			a.AddAsset(asset, false)
 			a.Assets[k] = asset
 			if v.IsEntry {
 				entry := a.CreateEntry(v.Name)
@@ -81,11 +80,12 @@ func readViteManifest(reader io.Reader, a *AssetMapper) error {
 
 				for _, css := range v.CSS {
 					cssAsset := &Asset{
-						Path:       css,
-						PublicPath: a.PublicPath,
+						Path:       strings.TrimLeft(css, "/"),
+						PublicPath: assetPub,
 						Hash:       "",
 					}
-					a.Assets[css] = cssAsset
+
+					a.AddAsset(cssAsset, false)
 					entry.Add(cssAsset.String())
 				}
 			}
@@ -97,7 +97,6 @@ func readViteManifest(reader io.Reader, a *AssetMapper) error {
 
 func readWebpackManifest(reader io.Reader, a *AssetMapper) (err error) {
 	decoder := json.NewDecoder(reader)
-	pubHasTrailingSlash := strings.HasSuffix(a.PublicPath, "/")
 
 	for decoder.More() {
 		var data map[string]string
@@ -108,15 +107,13 @@ func readWebpackManifest(reader io.Reader, a *AssetMapper) (err error) {
 		}
 
 		for k, v := range data {
-			if pubHasTrailingSlash {
-				v = strings.TrimLeft(v, "/")
-			}
+			v = strings.TrimLeft(v, "/")
 			asset := &Asset{
 				Path:       v,
-				PublicPath: a.PublicPath,
+				PublicPath: strings.TrimRight(a.PublicPath, "/") + "/",
 				Hash:       "",
 			}
-
+			a.AddAsset(asset, false)
 			a.Assets[k] = asset
 		}
 

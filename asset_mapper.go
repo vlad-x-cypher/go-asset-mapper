@@ -12,6 +12,7 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 )
 
@@ -85,13 +86,16 @@ func (a *AssetMapper) AddAsset(asset *Asset, renew bool) {
 	}
 
 	a.Assets[asset.Path] = asset
-	a.Assets[asset.PublicPath] = asset
+	a.Assets[strings.TrimLeft(asset.Path, "/")] = asset
 }
 
 // ScanDir walks directory and maps all files to AssetMapper, storing its path and hash.
 func (a *AssetMapper) ScanDir(dirName string) error {
-	err := filepath.Walk(dirName, func(path string, info fs.FileInfo, err error) error {
-		if info.IsDir() {
+	err := filepath.WalkDir(dirName, func(path string, d fs.DirEntry, err error) error {
+		if err != nil {
+			return err
+		}
+		if d.IsDir() {
 			return nil
 		}
 
@@ -142,6 +146,7 @@ func attributeMapToString(m map[string]string) string {
 		}
 	}
 
+	slices.Sort(s)
 	return strings.Join(s, " ")
 }
 
