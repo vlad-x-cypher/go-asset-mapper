@@ -4,7 +4,7 @@ import "regexp"
 
 var (
 	cssRe   = regexp.MustCompile(`\.css$`)
-	jsRe    = regexp.MustCompile(`\.js$`)
+	jsRe    = regexp.MustCompile(`\.js|\.mjs|\.cjs$`)
 	imageRe = regexp.MustCompile(`(\.webp|\.jpg|\.jpeg|\.jpe|\.jfif|\.jif|\.png|\.gif|\.tiff|\.tif|\.svg|\.avif)$`)
 )
 
